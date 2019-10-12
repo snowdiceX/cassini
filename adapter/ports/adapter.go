@@ -189,7 +189,7 @@ func (a *QosAdapter) eventHandle(listener EventsListener, remote string,
 		event := &types.Event{
 			NodeAddress:        remote,
 			CassiniEventDataTx: ce,
-			Source:             ed}
+			Source:             &ed}
 
 		listener(event, a)
 	}

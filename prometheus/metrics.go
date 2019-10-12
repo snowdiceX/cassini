@@ -1,6 +1,7 @@
 package prometheus
 
 import (
+	"fmt"
 	"sync"
 	"time"
 
@@ -193,5 +194,79 @@ func (m *TickerGaugeMetric) GetLabelValues() []string {
 
 // SetLabelValues sets label values
 func (m *TickerGaugeMetric) SetLabelValues(values []string) {
+	m.labelValues = values
+}
+
+// TxMaxGaugeMetric wraps prometheus export data with ticker job
+type TxMaxGaugeMetric struct {
+	max         float64
+	value       float64
+	labelValues []string
+	mux         sync.RWMutex
+}
+
+// Init starts ticker goroutine
+func (m *TxMaxGaugeMetric) Init() {
+	t := time.NewTicker(time.Duration(60) * time.Second)
+
+	go func() {
+		for {
+			select {
+			case <-t.C:
+				{
+					m.ResetValue()
+				}
+			}
+		}
+	}()
+}
+
+// GetValue returns value
+func (m *TxMaxGaugeMetric) GetValue() float64 {
+	m.mux.RLock()
+	defer m.mux.RUnlock()
+
+	return m.value
+}
+
+// ResetValue sets value to 0
+func (m *TxMaxGaugeMetric) ResetValue() {
+	m.mux.Lock()
+	defer m.mux.Unlock()
+
+	m.value = m.max
+	m.max = 0
+	fmt.Println("ticker reset: ", m.value, "; ", m.max)
+}
+
+// SetValue sets value
+func (m *TxMaxGaugeMetric) SetValue(v float64) {
+	m.mux.Lock()
+	defer m.mux.Unlock()
+
+	if v == 0 {
+		m.value = m.max
+		m.max = 0
+	} else if m.max < v {
+		m.max = v
+	}
+	fmt.Println("ticker max: ", m.value, "; ", m.max, "; ", v)
+}
+
+// GetValueType returns value type
+func (m *TxMaxGaugeMetric) GetValueType() prometheus.ValueType {
+	return prometheus.GaugeValue
+}
+
+// SetValueType sets nothing
+func (m *TxMaxGaugeMetric) SetValueType(prometheus.ValueType) {}
+
+// GetLabelValues returns label values
+func (m *TxMaxGaugeMetric) GetLabelValues() []string {
+	return m.labelValues
+}
+
+// SetLabelValues sets label values
+func (m *TxMaxGaugeMetric) SetLabelValues(values []string) {
 	m.labelValues = values
 }

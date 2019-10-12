@@ -18,6 +18,7 @@ const (
 	KeyQueueSize    = "queue_size"
 	KeyQueue        = "queue"
 	KeyAdaptors     = "adaptors"
+	KeyTxMax        = "tx_max"
 	KeyTxsWait      = "txs_wait"
 	KeyTxCost       = "tx_cost"
 	KeyTxsPerSecond = "txs_per_second"
@@ -35,6 +36,7 @@ func init() {
 	// Set(KeyQueueSize, 0,"local")
 	Set(KeyQueue, 0)
 	// Set(KeyAdaptors, 0, "?")
+	Set(KeyTxMax, 0)
 	Set(KeyTxsWait, 0)
 	Set(KeyTxCost, 0)
 	Set(KeyTxsPerSecond, 0)
@@ -62,6 +64,9 @@ func initConfig() {
 			Key:  KeyErrors,
 			Type: "CounterMetric"},
 		&MetricConfig{
+			Key:  KeyTxMax,
+			Type: "TxMaxGaugeMetric"},
+		&MetricConfig{
 			Key:  KeyTxsPerSecond,
 			Type: "TickerGaugeMetric"}}
 	viper.Set(KeyMetricType, initMcs)
@@ -83,6 +88,11 @@ func initCollector() {
 		fmt.Sprint(KeyPrefix, KeyQueue),
 		"Current size of tx in queue",
 		nil, nil)
+	collector.descs[KeyTxMax] = prometheus.NewDesc(
+		fmt.Sprint(KeyPrefix, KeyTxMax),
+		"Max value of transfer txs per minute",
+		nil, nil)
+
 	collector.descs[KeyTxsPerSecond] = prometheus.NewDesc(
 		fmt.Sprint(KeyPrefix, KeyTxsPerSecond),
 		"Number of relayed tx per second",
@@ -215,6 +225,10 @@ func (c *cassiniCollector) createMetric(key string) ExportMetric {
 			return &ImmutableGaugeMetric{}
 		} else if strings.EqualFold(mc.Type, "CounterMetric") {
 			return &CounterMetric{}
+		} else if strings.EqualFold(mc.Type, "TxMaxGaugeMetric") {
+			m := &TxMaxGaugeMetric{}
+			m.Init()
+			return m
 		} else if strings.EqualFold(mc.Type, "TickerGaugeMetric") {
 			m := &TickerGaugeMetric{}
 			m.Init()

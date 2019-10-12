@@ -8,9 +8,11 @@ import (
 	"github.com/QOSGroup/cassini/adapter/ports"
 	cmn "github.com/QOSGroup/cassini/common"
 	"github.com/QOSGroup/cassini/config"
+	"github.com/QOSGroup/cassini/event"
 	"github.com/QOSGroup/cassini/log"
 	"github.com/QOSGroup/cassini/types"
 	"github.com/QOSGroup/qbase/txs"
+	"github.com/spf13/viper"
 )
 
 // 命令行 events 命令执行方法
@@ -18,6 +20,10 @@ var events = func() (cancel context.CancelFunc, err error) {
 	conf := config.GetConfig()
 	var cancels []context.CancelFunc
 	var cancelFunc context.CancelFunc
+
+	errChannel := make(chan error, 1)
+	startPrometheus(errChannel)
+
 	for _, mockConf := range conf.Mocks {
 		cancelFunc, err = subscribe(mockConf.RPC.NodeAddress, mockConf.Subscribe)
 		if err != nil {
@@ -50,8 +56,17 @@ func subscribe(remote string, query string) (context.CancelFunc, error) {
 		IP:        ip,
 		Port:      port,
 		Query:     query}
-	conf.Listener = func(event *types.Event, adapter ports.Adapter) {
-		handle(event)
+
+	viper.Set("exporter", true)
+
+	if viper.GetBool("exporter") {
+		conf.Listener = func(e *types.Event, adapter ports.Adapter) {
+			event.Import(e)
+		}
+	} else {
+		conf.Listener = func(e *types.Event, adapter ports.Adapter) {
+			handle(e)
+		}
 	}
 	ports.RegisterAdapter(conf)
 	log.Infof("Subscribe successful - remote: %v, subscribe: %v", remote, query)
@@ -61,17 +76,13 @@ func subscribe(remote string, query string) (context.CancelFunc, error) {
 	return cancel, nil
 }
 
-func handle(event *types.Event) {
-	// et := e.(tmtypes.EventDataTx) //注：e类型断言为tmtypes.EventDataTx 类型
-	// ca := types.CassiniEventDataTx{}
-	// err := ca.ConstructFromTags(et.Result.Tags)
-	ca := event.CassiniEventDataTx
+func handle(e *types.Event) {
+	ca := e.CassiniEventDataTx
 	tx := &txs.TxQcp{
-		BlockHeight: event.Height,
-		// TxIndex:     int64(et.Index),
-		Sequence: ca.Sequence,
-		From:     ca.From,
-		To:       ca.To}
+		BlockHeight: e.Height,
+		Sequence:    ca.Sequence,
+		From:        ca.From,
+		To:          ca.To}
 	log.Debugf("Got Tx event - %v hash: %x\n",
 		cmn.StringTx(tx), ca.HashBytes)
 }

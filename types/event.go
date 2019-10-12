@@ -23,7 +23,7 @@ type CassiniEventDataTx struct {
 type Event struct {
 	NodeAddress        string               `json:"node"` //event 源地址
 	CassiniEventDataTx `json:"eventDataTx"` //event 事件
-	Source             tctypes.ResultEvent
+	Source             *tctypes.ResultEvent
 }
 
 // ConstructFromTags parse tx event tags
