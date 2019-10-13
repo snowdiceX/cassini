@@ -2,6 +2,7 @@ package prometheus
 
 import (
 	"fmt"
+	"strings"
 	"sync"
 	"time"
 
@@ -10,18 +11,38 @@ import (
 
 // ExportMetric defined an interface about prometheus exporter metric
 type ExportMetric interface {
+	GetKey() string
+	SetKey(string)
+	Init()
 	GetValue() float64
 	SetValue(float64)
 	GetValueType() prometheus.ValueType
 	SetValueType(prometheus.ValueType)
 	GetLabelValues() []string
 	SetLabelValues([]string)
+	IsContained([]string) bool
 }
 
 // ImmutableGaugeMetric stores an immutable value
 type ImmutableGaugeMetric struct {
+	key         string
 	value       float64
 	labelValues []string
+}
+
+// GetKey returns metric key
+func (m *ImmutableGaugeMetric) GetKey() string {
+	return m.key
+}
+
+// SetKey sets metric key
+func (m *ImmutableGaugeMetric) SetKey(k string) {
+	m.key = k
+}
+
+// Init metric
+func (m *ImmutableGaugeMetric) Init() {
+
 }
 
 // GetValue returns value
@@ -52,11 +73,32 @@ func (m *ImmutableGaugeMetric) SetLabelValues(values []string) {
 	m.labelValues = values
 }
 
+// IsContained determines whether the labels are contained
+func (m *ImmutableGaugeMetric) IsContained(labels []string) bool {
+	return true
+}
+
 // CounterMetric stores a counter value
 type CounterMetric struct {
+	key         string
 	value       float64
 	labelValues []string
 	mux         sync.RWMutex
+}
+
+// GetKey returns metric key
+func (m *CounterMetric) GetKey() string {
+	return m.key
+}
+
+// SetKey sets metric key
+func (m *CounterMetric) SetKey(k string) {
+	m.key = k
+}
+
+// Init metric
+func (m *CounterMetric) Init() {
+
 }
 
 // GetValue returns value
@@ -93,11 +135,32 @@ func (m *CounterMetric) SetLabelValues(values []string) {
 	m.labelValues = values
 }
 
+// IsContained determines whether the labels are contained
+func (m *CounterMetric) IsContained(labels []string) bool {
+	return true
+}
+
 // GaugeMetric wraps prometheus export data
 type GaugeMetric struct {
+	key         string
 	value       float64
 	labelValues []string
 	mux         sync.RWMutex
+}
+
+// GetKey returns metric key
+func (m *GaugeMetric) GetKey() string {
+	return m.key
+}
+
+// SetKey sets metric key
+func (m *GaugeMetric) SetKey(k string) {
+	m.key = k
+}
+
+// Init metric
+func (m *GaugeMetric) Init() {
+
 }
 
 // GetValue returns value
@@ -134,12 +197,28 @@ func (m *GaugeMetric) SetLabelValues(values []string) {
 	m.labelValues = values
 }
 
+// IsContained determines whether the labels are contained
+func (m *GaugeMetric) IsContained(labels []string) bool {
+	return true
+}
+
 // TickerGaugeMetric wraps prometheus export data with ticker job
 type TickerGaugeMetric struct {
+	key         string
 	calculating float64
 	value       float64
 	labelValues []string
 	mux         sync.RWMutex
+}
+
+// GetKey returns metric key
+func (m *TickerGaugeMetric) GetKey() string {
+	return m.key
+}
+
+// SetKey sets metric key
+func (m *TickerGaugeMetric) SetKey(k string) {
+	m.key = k
 }
 
 // Init starts ticker goroutine
@@ -197,8 +276,14 @@ func (m *TickerGaugeMetric) SetLabelValues(values []string) {
 	m.labelValues = values
 }
 
+// IsContained determines whether the labels are contained
+func (m *TickerGaugeMetric) IsContained(labels []string) bool {
+	return true
+}
+
 // TxMaxGaugeMetric wraps prometheus export data with ticker job
 type TxMaxGaugeMetric struct {
+	key         string
 	max         float64
 	value       float64
 	labelValues []string
@@ -219,6 +304,16 @@ func (m *TxMaxGaugeMetric) Init() {
 			}
 		}
 	}()
+}
+
+// GetKey returns metric key
+func (m *TxMaxGaugeMetric) GetKey() string {
+	return m.key
+}
+
+// SetKey sets metric key
+func (m *TxMaxGaugeMetric) SetKey(k string) {
+	m.key = k
 }
 
 // GetValue returns value
@@ -269,4 +364,17 @@ func (m *TxMaxGaugeMetric) GetLabelValues() []string {
 // SetLabelValues sets label values
 func (m *TxMaxGaugeMetric) SetLabelValues(values []string) {
 	m.labelValues = values
+}
+
+// IsContained determines whether the labels are contained
+func (m *TxMaxGaugeMetric) IsContained(labels []string) bool {
+	if len(m.labelValues) != len(labels) {
+		return false
+	}
+	for i, v := range labels {
+		if !strings.EqualFold(v, m.labelValues[i]) {
+			return false
+		}
+	}
+	return true
 }

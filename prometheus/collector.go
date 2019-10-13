@@ -36,7 +36,8 @@ func init() {
 	// Set(KeyQueueSize, 0,"local")
 	Set(KeyQueue, 0)
 	// Set(KeyAdaptors, 0, "?")
-	Set(KeyTxMax, 0)
+	Set(KeyTxMax, 0, "send", "qos")
+	Set(KeyTxMax, 0, "receive", "qos")
 	Set(KeyTxsWait, 0)
 	Set(KeyTxCost, 0)
 	Set(KeyTxsPerSecond, 0)
@@ -91,7 +92,7 @@ func initCollector() {
 	collector.descs[KeyTxMax] = prometheus.NewDesc(
 		fmt.Sprint(KeyPrefix, KeyTxMax),
 		"Max value of transfer txs per minute",
-		nil, nil)
+		[]string{"transfer", "token"}, nil)
 
 	collector.descs[KeyTxsPerSecond] = prometheus.NewDesc(
 		fmt.Sprint(KeyPrefix, KeyTxsPerSecond),
@@ -162,7 +163,7 @@ func (c *cassiniCollector) Collect(ch chan<- prometheus.Metric) {
 			// 	c.export(ch, key, metric)
 			// }
 		} else {
-			c.export(ch, key, metric)
+			c.export(ch, metric)
 		}
 		return true
 	}
@@ -176,8 +177,9 @@ func (c *cassiniCollector) SetErrorChannel(errChannel chan<- error) {
 
 func (c *cassiniCollector) Set(key string, value float64,
 	labelValues ...string) {
-	// c.mapper.Store(key, value)
-	v, loaded := c.mapper.Load(key)
+	mapperKey := buildMapperKey(key, labelValues)
+	fmt.Println("metric mapper key: ", mapperKey)
+	v, loaded := c.mapper.Load(mapperKey)
 	if v == nil || !loaded {
 		metric := c.createMetric(key)
 		if metric == nil {
@@ -185,7 +187,7 @@ func (c *cassiniCollector) Set(key string, value float64,
 		}
 		metric.SetValue(value)
 		metric.SetLabelValues(labelValues)
-		if v, loaded = c.mapper.LoadOrStore(key, metric); !loaded {
+		if v, loaded = c.mapper.LoadOrStore(mapperKey, metric); !loaded {
 			return
 		}
 	}
@@ -206,37 +208,39 @@ func Set(key string, value float64,
 }
 
 func (c *cassiniCollector) export(ch chan<- prometheus.Metric,
-	key string, metric ExportMetric) {
-	desc, ok := c.descs[key]
+	metric ExportMetric) {
+	desc, ok := c.descs[metric.GetKey()]
 	if !ok {
-		c.errChannel <- fmt.Errorf("Collect error: can not find desc(%s)", key)
+		c.errChannel <- fmt.Errorf(
+			"Collect error: can not find desc(%s)",
+			metric.GetKey())
 		return
 	}
 	ch <- prometheus.MustNewConstMetric(
 		desc,
 		metric.GetValueType(),
-		metric.GetValue(), metric.GetLabelValues()...)
+		metric.GetValue(),
+		metric.GetLabelValues()...)
 }
 
-func (c *cassiniCollector) createMetric(key string) ExportMetric {
+func (c *cassiniCollector) createMetric(key string) (metric ExportMetric) {
 	mc := c.getMetricConfig(key)
 	if mc != nil {
 		if strings.EqualFold(mc.Type, "ImmutableGaugeMetric") {
-			return &ImmutableGaugeMetric{}
+			metric = &ImmutableGaugeMetric{}
 		} else if strings.EqualFold(mc.Type, "CounterMetric") {
-			return &CounterMetric{}
+			metric = &CounterMetric{}
 		} else if strings.EqualFold(mc.Type, "TxMaxGaugeMetric") {
-			m := &TxMaxGaugeMetric{}
-			m.Init()
-			return m
+			metric = &TxMaxGaugeMetric{}
 		} else if strings.EqualFold(mc.Type, "TickerGaugeMetric") {
-			m := &TickerGaugeMetric{}
-			m.Init()
-			return m
+			metric = &TickerGaugeMetric{}
 		}
-
+	} else {
+		metric = &GaugeMetric{}
 	}
-	return &GaugeMetric{}
+	metric.SetKey(key)
+	metric.Init()
+	return
 }
 
 func (c *cassiniCollector) getMetricConfig(key string) *MetricConfig {
@@ -246,6 +250,13 @@ func (c *cassiniCollector) getMetricConfig(key string) *MetricConfig {
 		}
 	}
 	return nil
+}
+
+func buildMapperKey(key string, labels []string) string {
+	if len(labels) > 0 {
+		return fmt.Sprint(key, "_", strings.Join(labels, "_"))
+	}
+	return key
 }
 
 // StartMetrics prometheus exporter("/metrics") service
