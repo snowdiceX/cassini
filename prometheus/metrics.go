@@ -331,7 +331,8 @@ func (m *TxMaxGaugeMetric) ResetValue() {
 
 	m.value = m.max
 	m.max = 0
-	fmt.Println("ticker reset: ", m.value, "; ", m.max)
+	fmt.Println("ticker reset: ", m.key, "; ",
+		m.value, "; ", m.max)
 }
 
 // SetValue sets value
@@ -339,13 +340,11 @@ func (m *TxMaxGaugeMetric) SetValue(v float64) {
 	m.mux.Lock()
 	defer m.mux.Unlock()
 
-	if v == 0 {
-		m.value = m.max
-		m.max = 0
-	} else if m.max < v {
+	if m.max < v {
 		m.max = v
 	}
-	fmt.Println("ticker max: ", m.value, "; ", m.max, "; ", v)
+	fmt.Println("ticker max: ", m.key, "; ",
+		m.value, "; ", m.max, "; ", v)
 }
 
 // GetValueType returns value type
