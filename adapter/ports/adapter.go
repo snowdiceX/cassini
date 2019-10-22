@@ -4,11 +4,11 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/QOSGroup/cassini/event"
 	"github.com/QOSGroup/cassini/log"
 	"github.com/QOSGroup/cassini/restclient"
 	"github.com/QOSGroup/cassini/types"
 	"github.com/QOSGroup/qbase/txs"
+	"github.com/snowdiceX/events"
 	tctypes "github.com/tendermint/tendermint/rpc/core/types"
 )
 
@@ -165,7 +165,7 @@ func (a *QosAdapter) GetPort() int {
 func (a *QosAdapter) subscribeRemote(remote string) <-chan tctypes.ResultEvent {
 	log.Debug("Event subscribe remote: ", remote)
 	//TODO query 条件?? "tm.event = 'Tx' AND qcp.to != '' AND qcp.sequence > 0"
-	cancel, events, err := event.SubscribeRemote(remote,
+	cancel, events, err := events.SubscribeRemote(remote,
 		a.config.ChainName, a.config.Query)
 	if err != nil {
 		// log.Errorf("Subscibe events failed - remote [%s] : '%s'", remote, err)

@@ -50,12 +50,13 @@ require (
 	github.com/prometheus/client_golang v0.9.3-0.20190313112143-fa4aa9000d28
 	github.com/prometheus/prometheus v0.0.0-20170814170113-3101606756c5 // indirect
 	github.com/rjeczalik/notify v0.9.2 // indirect
+	github.com/snowdiceX/events v0.0.2
 	github.com/soheilhy/cmux v0.1.4 // indirect
 	github.com/spf13/cobra v0.0.3
 	github.com/spf13/pflag v1.0.3
 	github.com/spf13/viper v1.3.1
 	github.com/stretchr/testify v1.3.0
-	github.com/tendermint/go-amino v0.15.0
+	github.com/tendermint/go-amino v0.15.1
 	github.com/tendermint/tendermint v0.32.0
 	github.com/tmc/grpc-websocket-proxy v0.0.0-20170815181823-89b8d40f7ca8 // indirect
 	github.com/ugorji/go/codec v0.0.0-20181204163529-d75b2dcb6bc8
