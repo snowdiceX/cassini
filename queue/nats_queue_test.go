@@ -53,6 +53,39 @@ func Test_NatsNewProducer(t *testing.T) {
 	}
 }
 
+func Test_NatsQueue(t *testing.T) {
+
+	q := &NatsQueue{Subject: "Test_NatsQueue", Config: "nats://127.0.0.1:4222"}
+	err := q.Init()
+	assert.NoError(t, err)
+	c, err := q.NewConsumer()
+	assert.NoError(t, err)
+	assert.Equal(t, "nats://127.0.0.1:4222", c.Config())
+	assert.Equal(t, "Test_NatsQueue", c.Subject())
+
+	p, err := q.NewProducer()
+	assert.NoError(t, err)
+	assert.Equal(t, "nats://127.0.0.1:4222", p.Config())
+	assert.Equal(t, "Test_NatsQueue", p.Subject())
+}
+
+func Test_LocalQueue(t *testing.T) {
+	q := &LocalQueue{Subject: "Test_LocalQueue", Config: "local"}
+	err := q.Init()
+	assert.NoError(t, err)
+	err = q.Init()
+	assert.NoError(t, err)
+	c, err := q.NewConsumer()
+	assert.NoError(t, err)
+	assert.Equal(t, "local", c.Config())
+	assert.Equal(t, "Test_LocalQueue", c.Subject())
+
+	p, err := q.NewProducer()
+	assert.NoError(t, err)
+	assert.Equal(t, "local", p.Config())
+	assert.Equal(t, "Test_LocalQueue", p.Subject())
+}
+
 func Benchmark_NatsProducer(b *testing.B) {
 	viper.Set(commands.FlagQueue, "nats://127.0.0.1:4222")
 

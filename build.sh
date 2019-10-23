@@ -1,5 +1,7 @@
 #!/bin/sh
 
+# go test -coverprofile=$t $@ && go tool cover -func=$t && unlink $t
+
 buildDate=`date +"%F %T %z"`
 goVersion=`go version`
 goVersion=${goVersion#"go version "}
