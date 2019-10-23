@@ -64,6 +64,5 @@ dependency-graph.png
 
 
 #go
-go.sum
 cmd/cassini/cassini
 cmd/cassini/config/
