@@ -5,7 +5,7 @@ import (
 	"sync"
 
 	"github.com/QOSGroup/cassini/commands"
-	exporter "github.com/QOSGroup/cassini/prometheus"
+	"github.com/snowdiceX/exporter"
 	"github.com/spf13/viper"
 )
 

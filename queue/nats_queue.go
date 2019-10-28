@@ -5,8 +5,8 @@ import (
 	"fmt"
 
 	"github.com/QOSGroup/cassini/log"
-	exporter "github.com/QOSGroup/cassini/prometheus"
 	"github.com/nats-io/go-nats"
+	"github.com/snowdiceX/exporter"
 )
 
 // NatsQueue wraps nats client as a message queue service

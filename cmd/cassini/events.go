@@ -23,7 +23,7 @@ var events = func() (cancel context.CancelFunc, err error) {
 
 	errChannel := make(chan error, 1)
 	startLog(errChannel)
-	startPrometheus(errChannel)
+	startExporter(errChannel)
 
 	for _, mockConf := range conf.Mocks {
 		cancelFunc, err = subscribe(mockConf.RPC.NodeAddress, mockConf.Subscribe)

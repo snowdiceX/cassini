@@ -4,9 +4,9 @@ import (
 	"strconv"
 
 	"github.com/QOSGroup/cassini/log"
-	exporter "github.com/QOSGroup/cassini/prometheus"
 	"github.com/QOSGroup/cassini/types"
 	qostypes "github.com/QOSGroup/qos/types"
+	"github.com/snowdiceX/exporter"
 )
 
 // Import an event for prometheus exporter

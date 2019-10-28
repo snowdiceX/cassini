@@ -14,7 +14,7 @@ import (
 	"github.com/QOSGroup/cassini/config"
 	"github.com/QOSGroup/cassini/consensus"
 	"github.com/QOSGroup/cassini/log"
-	"github.com/QOSGroup/cassini/prometheus"
+	"github.com/snowdiceX/exporter"
 )
 
 // 命令行 start 命令执行方法
@@ -25,7 +25,7 @@ var starter = func() (cancel context.CancelFunc, err error) {
 	var w sync.WaitGroup
 	errChannel := make(chan error, 1)
 	startLog(errChannel)
-	startPrometheus(errChannel)
+	startExporter(errChannel)
 	startEtcd(&w)
 	startAdapterPorts(errChannel, &w)
 	w.Wait()
@@ -53,10 +53,10 @@ func startLog(errChannel <-chan error) {
 	}()
 }
 
-func startPrometheus(errChannel chan<- error) {
+func startExporter(errChannel chan<- error) {
 	log.Info("Starting prometheus exporter...")
 	go func() {
-		prometheus.StartMetrics(errChannel)
+		exporter.StartMetrics(errChannel)
 	}()
 	log.Info("Prometheus exporter(:39099/metrics) started")
 }

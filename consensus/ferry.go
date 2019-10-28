@@ -18,8 +18,8 @@ import (
 	"github.com/QOSGroup/cassini/concurrency"
 	"github.com/QOSGroup/cassini/config"
 	"github.com/QOSGroup/cassini/log"
-	exporter "github.com/QOSGroup/cassini/prometheus"
 	"github.com/QOSGroup/cassini/restclient"
+	"github.com/snowdiceX/exporter"
 )
 
 // Ferry Comsumer tx message and handle(consensus, broadcast...) it.

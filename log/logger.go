@@ -1,8 +1,8 @@
 package log
 
 import (
-	"github.com/QOSGroup/cassini/prometheus"
 	"github.com/cihub/seelog"
+	"github.com/snowdiceX/exporter"
 )
 
 var dfaultConfig = `
@@ -62,7 +62,7 @@ func Warn(v ...interface{}) {
 
 // Error logs
 func Error(v ...interface{}) {
-	prometheus.Set(prometheus.KeyErrors, 1)
+	exporter.Set(exporter.KeyErrors, 1)
 	seelog.Error(v...)
 	//seelog.Error(fmt.Sprint(v...), "\nError stack:\n", string(debug.Stack()))
 }
@@ -89,7 +89,7 @@ func Warnf(format string, params ...interface{}) {
 
 // Errorf formats logs
 func Errorf(format string, params ...interface{}) {
-	prometheus.Set(prometheus.KeyErrors, 1)
+	exporter.Set(exporter.KeyErrors, 1)
 	seelog.Errorf(format, params...)
 	// seelog.Error(fmt.Sprintf(format, params...), "\nStack:\n", string(debug.Stack()))
 	//params = append(params, string(debug.Stack()))
