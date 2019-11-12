@@ -6,12 +6,10 @@ import (
 	"os"
 
 	"github.com/QOSGroup/cassini/adapter/ports"
-	cmn "github.com/QOSGroup/cassini/common"
 	"github.com/QOSGroup/cassini/config"
 	"github.com/QOSGroup/cassini/event"
 	"github.com/QOSGroup/cassini/log"
 	"github.com/QOSGroup/cassini/types"
-	"github.com/QOSGroup/qbase/txs"
 	"github.com/spf13/viper"
 )
 
@@ -58,7 +56,7 @@ func subscribe(remote string, query string) (context.CancelFunc, error) {
 		Port:      port,
 		Query:     query}
 
-	viper.Set("exporter", true)
+	// viper.Set("exporter", true)
 
 	if viper.GetBool("exporter") {
 		conf.Listener = func(e *types.Event, adapter ports.Adapter) {
@@ -78,12 +76,15 @@ func subscribe(remote string, query string) (context.CancelFunc, error) {
 }
 
 func handle(e *types.Event) {
-	ca := e.CassiniEventDataTx
-	tx := &txs.TxQcp{
-		BlockHeight: e.Height,
-		Sequence:    ca.Sequence,
-		From:        ca.From,
-		To:          ca.To}
-	log.Debugf("Got Tx event - %v hash: %x\n",
-		cmn.StringTx(tx), ca.HashBytes)
+	if e.Source == nil {
+		log.Errorf("event's source is nil: %s", e.NodeAddress)
+		return
+	}
+	tags := e.Source.Events
+	if tags == nil || len(tags) == 0 {
+		log.Errorf("empty event's tags: %s", e.NodeAddress)
+		return
+	}
+
+	log.Debug("Got event")
 }
