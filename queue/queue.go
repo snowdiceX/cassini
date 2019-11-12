@@ -5,6 +5,7 @@ import (
 	"sync"
 
 	"github.com/QOSGroup/cassini/commands"
+	"github.com/QOSGroup/cassini/event"
 	"github.com/snowdiceX/exporter"
 	"github.com/spf13/viper"
 )
@@ -90,7 +91,7 @@ func (q *LocalQueue) Init() error {
 	queueSize := 100
 	q.ch = make(chan []byte, queueSize)
 	q.isInitialized = true
-	exporter.Set(exporter.KeyQueueSize, float64(queueSize), "local")
+	exporter.Set(event.KeyQueueSize, float64(queueSize), "local")
 	return nil
 }
 

@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/QOSGroup/cassini/event"
 	"github.com/QOSGroup/cassini/log"
 	"github.com/nats-io/go-nats"
 	"github.com/snowdiceX/exporter"
@@ -17,7 +18,7 @@ type NatsQueue struct {
 
 // Init message queue
 func (q *NatsQueue) Init() error {
-	exporter.Set(exporter.KeyQueueSize, 0, "nats")
+	exporter.Set(event.KeyQueueSize, 0, "nats")
 	return nil
 }
 

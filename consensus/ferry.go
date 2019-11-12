@@ -17,6 +17,7 @@ import (
 	cmn "github.com/QOSGroup/cassini/common"
 	"github.com/QOSGroup/cassini/concurrency"
 	"github.com/QOSGroup/cassini/config"
+	"github.com/QOSGroup/cassini/event"
 	"github.com/QOSGroup/cassini/log"
 	"github.com/QOSGroup/cassini/restclient"
 	"github.com/snowdiceX/exporter"
@@ -346,7 +347,7 @@ func (f *Ferry) postTxQcp(to string, qcp *txs.TxQcp) (err error) {
 			if err != nil {
 				log.Errorf("post TxQcp error: %v", err)
 			} else {
-				exporter.Set(exporter.KeyTxsPerSecond, 1)
+				exporter.Set(event.KeyTxsPerSecond, 1)
 				return nil
 			}
 		}

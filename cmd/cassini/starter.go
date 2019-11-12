@@ -13,6 +13,7 @@ import (
 	"github.com/QOSGroup/cassini/concurrency"
 	"github.com/QOSGroup/cassini/config"
 	"github.com/QOSGroup/cassini/consensus"
+	"github.com/QOSGroup/cassini/event"
 	"github.com/QOSGroup/cassini/log"
 	"github.com/snowdiceX/exporter"
 )
@@ -55,9 +56,12 @@ func startLog(errChannel <-chan error) {
 
 func startExporter(errChannel chan<- error) {
 	log.Info("Starting prometheus exporter...")
-	go func() {
-		exporter.StartMetrics(errChannel)
-	}()
+
+	exporter.StartMetrics(errChannel)
+
+	exporter.Set(event.KeyTxMax, 0, "receive", "qos", "")
+	exporter.Set(event.KeyTxMax, 0, "send", "qos", "")
+
 	log.Info("Prometheus exporter(:39099/metrics) started")
 }
 

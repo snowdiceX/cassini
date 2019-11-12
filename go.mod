@@ -48,7 +48,7 @@ require (
 	github.com/prometheus/prometheus v0.0.0-20170814170113-3101606756c5 // indirect
 	github.com/rjeczalik/notify v0.9.2 // indirect
 	github.com/snowdiceX/events v0.0.2
-	github.com/snowdiceX/exporter v0.0.1
+	github.com/snowdiceX/exporter v0.0.6
 	github.com/soheilhy/cmux v0.1.4 // indirect
 	github.com/spf13/cobra v0.0.3
 	github.com/spf13/viper v1.3.1
