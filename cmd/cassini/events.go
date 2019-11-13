@@ -60,7 +60,7 @@ func subscribe(remote string, query string) (context.CancelFunc, error) {
 
 	if viper.GetBool("exporter") {
 		conf.Listener = func(e *types.Event, adapter ports.Adapter) {
-			event.Import(e)
+			event.Export(e)
 		}
 	} else {
 		conf.Listener = func(e *types.Event, adapter ports.Adapter) {

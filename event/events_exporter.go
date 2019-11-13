@@ -60,8 +60,8 @@ func init() {
 	viper.Set(KeyDuration, "30")
 }
 
-// Import an event for prometheus exporter
-func Import(event *types.Event) {
+// Export an event for prometheus exporter
+func Export(event *types.Event) {
 	if event.Source == nil {
 		log.Errorf("event's source is nil: %s", event.NodeAddress)
 		return
