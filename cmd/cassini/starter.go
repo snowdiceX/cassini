@@ -7,10 +7,8 @@ import (
 	"strconv"
 	"strings"
 	"sync"
-	"time"
 
 	"github.com/QOSGroup/cassini/adapter/ports"
-	"github.com/QOSGroup/cassini/concurrency"
 	"github.com/QOSGroup/cassini/config"
 	"github.com/QOSGroup/cassini/consensus"
 	"github.com/QOSGroup/cassini/event"
@@ -27,7 +25,6 @@ var starter = func() (cancel context.CancelFunc, err error) {
 	errChannel := make(chan error, 1)
 	startLog(errChannel)
 	startExporter(errChannel)
-	startEtcd(&w)
 	startAdapterPorts(errChannel, &w)
 	w.Wait()
 	startConsensus(&w)
@@ -63,30 +60,6 @@ func startExporter(errChannel chan<- error) {
 	exporter.Set(event.KeyTxMax, 0, "send", "qos", "")
 
 	log.Info("Prometheus exporter(:39099/metrics) started")
-}
-
-func startEtcd(w *sync.WaitGroup) {
-	w.Add(1)
-	go func() {
-		etcd, err := concurrency.StartEmbedEtcd(config.GetConfig())
-		if err != nil {
-			panic(fmt.Errorf("Etcd server start error: %v", err))
-		}
-		w.Done()
-		if etcd == nil {
-			return
-		}
-		defer etcd.Close()
-		select {
-		case <-etcd.Server.ReadyNotify():
-			log.Info("Etcd server is ready!")
-		case <-time.After(60 * time.Second):
-			etcd.Server.Stop() // trigger a shutdown
-			log.Info("Etcd server took too long to start!")
-		}
-		err = <-etcd.Err()
-		log.Error("Etcd running error: ", err)
-	}()
 }
 
 func startAdapterPorts(errChannel chan<- error, w *sync.WaitGroup) {

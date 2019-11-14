@@ -14,20 +14,9 @@ consensus: true
 
 eventWaitMillitime: 2000
 
-useEtcd: true
-
 lock: etcd://127.0.0.1:2379
 
 lockTTL: 5000
-
-embedEtcd: true
-
-etcd:
-  name:           dev-cassini
-  advertise:      http://127.0.0.1:2379
-  advertisePeer:  http://127.0.0.1:2380
-  clusterToken:   dev-cassini-cluster
-  cluster:        dev-cassini=http://127.0.0.1:2380
 
 qscs:
   - name: fromChain

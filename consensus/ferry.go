@@ -48,16 +48,6 @@ func NewFerry(conf *config.Config, from, to string, sequence int64) *Ferry {
 	} else {
 		f.sequence = 1
 	}
-	if f.conf.UseEtcd {
-		var err error
-		f.mutex, err = concurrency.NewMutex(from+"_"+to, f.conf.Lock)
-		if err != nil {
-			log.Errorf("create mutex failed. %v", err)
-			f.conf.UseEtcd = false
-			return f
-		}
-		f.mutex.Update(f.sequence)
-	}
 
 	return f
 }
@@ -164,34 +154,12 @@ func (f *Ferry) ferryQCP(hash, nodes string, sequence int64) (err error) {
 		log.Debugf("Sign Tx Qcp for chain: %s", f.from)
 	}
 
-	if f.conf.UseEtcd {
-		if lockseq, err := f.mutex.Lock(sequence); err != nil {
-			log.Warnf("get lock failed. sequence [%d] / [%d]", sequence, lockseq)
-			if lockseq > 0 {
-				if sequence < lockseq {
-					log.Warnf("update sequence [#%d] to etcd sequence [#%d]",
-						sequence, lockseq)
-					// f.SetSequence(f.from, f.to, lockseq-1)
-				}
-			}
-			return fmt.Errorf("get lock fail %v", err)
-		}
-		log.Debugf("get lock success ,sequence [%d]", sequence)
-		err = f.postTxQcp(f.to, qcp)
-
-		if err != nil {
-			f.mutex.Unlock(false)
-			//log.Errorf("post qcp transaction failed. %v", err)
-			return errors.New("post qcp transaction failed")
-		}
-		f.mutex.Unlock(true)
-	} else {
-		err = f.postTxQcp(f.to, qcp)
-		if err != nil {
-			log.Errorf("post qcp transaction failed. %v", err)
-			return errors.New("post qcp transaction failed")
-		}
+	err = f.postTxQcp(f.to, qcp)
+	if err != nil {
+		log.Errorf("post qcp transaction failed. %v", err)
+		return errors.New("post qcp transaction failed")
 	}
+
 	delete(f.ConsMap.ConsMap, sequence)
 	log.Infof("success ferry qcp transaction f.t.s[%s %s #%d] \n",
 		f.from, f.to, sequence)

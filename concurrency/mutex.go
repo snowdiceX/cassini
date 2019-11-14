@@ -4,6 +4,8 @@
 package concurrency
 
 import (
+	"fmt"
+
 	"github.com/QOSGroup/cassini/types"
 )
 
@@ -30,14 +32,13 @@ type Mutex interface {
 }
 
 // NewMutex new mutex based on configuration.
-func NewMutex(name, address string) (m Mutex, err error) {
-	protocol, addrs := types.ParseAddrs(address)
+func NewMutex(name, address string) (Mutex, error) {
+	protocol, _ := types.ParseAddrs(address)
 
 	switch protocol {
 	case "etcd":
-		m, err = NewEtcdMutex(name, addrs)
-	default:
-		m = NewStandaloneMutex(name)
+		return nil, fmt.Errorf("etcd not supported, %s / %s", name, address)
 	}
-	return
+
+	return NewStandaloneMutex(name), nil
 }

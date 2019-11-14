@@ -36,9 +36,6 @@ type Config struct {
 	// Qscs 与relay连接的区块链相关配置
 	Qscs []*QscConfig `yaml:"qscs,omitempty"`
 
-	// UseEtcd Whether to use etcd or not
-	UseEtcd bool `yaml:"useEtcd,omitempty"`
-
 	// Lock config the lock
 	//
 	// "etcd://192.168.1.100:2379,192.168.1.101:2379,192.168.1.102:2379"
@@ -48,12 +45,6 @@ type Config struct {
 	//
 	// 5 - the lock will be auto-unlock with 5s when lose session
 	LockTTL int64 `yaml:"lockTTL,omitempty"`
-
-	// EmbedEtcd Whether to start embed etcd or not
-	EmbedEtcd bool `yaml:"embedEtcd,omitempty"`
-
-	// Etcd Embed-etcd config
-	Etcd *EtcdConfig `yaml:"etcd,omitempty"`
 }
 
 // QscConfig qsc 配置封装
@@ -103,19 +94,6 @@ func (c *Config) Load() (err error) {
 	// 	return
 	// }
 	// c.Mocks = mocks
-
-	// TODO ??? whats wrong ???
-	// var etcd *EtcdConfig
-	// if err = viper.UnmarshalKey("etcd", etcd); err != nil {
-	// 	return
-	// }
-	// c.Etcd = etcd
-
-	var etcd EtcdConfig
-	if err = viper.UnmarshalKey("etcd", &etcd); err != nil {
-		return
-	}
-	c.Etcd = &etcd
 
 	return
 }
